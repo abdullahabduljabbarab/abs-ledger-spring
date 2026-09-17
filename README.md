@@ -80,6 +80,49 @@ curl -sX POST localhost:8080/transactions \
 curl -s localhost:8080/accounts/<id>/balance
 ```
 
+## The API in action
+
+A full walkthrough against the running service, captured from the Swagger UI at
+`/swagger-ui.html`.
+
+The API surface:
+
+![Swagger UI](docs/images/swagger-overview.png)
+
+Open an account (`POST /accounts`, 201):
+
+![Create account](docs/images/create-account.png)
+
+Deposit into it (`POST /transactions`, 201):
+
+![Deposit](docs/images/deposit.png)
+
+The derived balance (`GET /accounts/{id}/balance`):
+
+![Balance](docs/images/balance.png)
+
+Transfer to another account (`POST /transactions`, 201):
+
+![Transfer](docs/images/transfer.png)
+
+The statement, the deposit and the transfer each with the running balance after
+it (`GET /accounts/{id}/entries`):
+
+![Entries with running balance](docs/images/entries.png)
+
+Idempotent replay: the same request again returns the original transaction with
+200, applied once:
+
+![Idempotent replay](docs/images/idempotency-replay.png)
+
+Idempotency conflict: the same key with different parameters is a 409:
+
+![Idempotency conflict](docs/images/idempotency-conflict.png)
+
+Overdraft refused: a withdrawal beyond the balance is a 422:
+
+![Insufficient funds](docs/images/insufficient-funds.png)
+
 ## Run it
 
 One command brings up PostgreSQL and the service (needs only Docker, no local
