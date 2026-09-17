@@ -161,6 +161,9 @@ test maps to an invariant:
 | `duplicate_account_name_is_conflict` | a reused account name is `409` |
 | `self_transfer_is_rejected` | a transfer to the same account is `422` |
 | `transfer_with_insufficient_funds_is_rejected` | an underfunded transfer is `422` |
+| `balance_of_unknown_account_is_404` | an unknown account returns `404` |
+| `negative_amount_is_rejected_by_validation` | a non-positive amount is rejected with `422` |
+| `statement_lists_entries_with_running_balance` | the statement lists entries with a running balance |
 | `concurrent_transfers_keep_the_books_balanced` | 100 parallel transfers, books still balance |
 | `every_transaction_balances_to_zero` | no transaction has a non-zero entry sum |
 | `an_unbalanced_transaction_cannot_be_posted_by_direct_sql` | the database rejects a non-zero-sum transaction |
