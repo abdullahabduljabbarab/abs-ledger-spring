@@ -29,7 +29,7 @@ every push. Test names below are the JUnit methods in
 | REQ-NF-003 | By design | datasource from `SPRING_DATASOURCE_*`; `.gitignore` excludes local artifacts |
 | REQ-NF-004 | CI evidence | GitHub Actions `mvn verify` on push |
 | REQ-NF-005 | Automated | `concurrent_transfers_keep_the_books_balanced` asserts the global sum is zero |
-| REQ-NF-006 | Automated | `every_transaction_balances_to_zero` |
+| REQ-NF-006 | Automated | `every_transaction_balances_to_zero`, and `an_unbalanced_transaction_cannot_be_posted_by_direct_sql` (database-enforced) |
 | REQ-NF-007 | By design + Automated | `AbstractIntegrationTest` runs a real PostgreSQL container; `docker-compose.yml` for local |
 | REQ-NF-008 | CI evidence | Flyway migration applied to a clean database before every test run |
 | REQ-NF-009 | Automated + Inspection | `balance_of_unknown_account_is_404`; CHECK / UNIQUE / FK declared in `V1__init.sql` |

@@ -77,9 +77,13 @@ B   +50.00
 ```
 
 Global invariant: the sum of all entries across all accounts is always zero.
-Per-transaction invariant: the entries of any one transaction sum to zero. The
-service asserts the pair sums to zero before committing, and the database refuses
-an entry that points at no transaction or account.
+Per-transaction invariant: the entries of any one transaction sum to zero. This
+is enforced in both places: the service asserts the pair sums to zero before
+committing, and the database enforces it independently with a deferred constraint
+trigger that rejects, at commit, any transaction whose entries do not sum to zero.
+Foreign keys additionally refuse an entry that points at no transaction or
+account. The trigger is deferred so both sides of the transaction are present when
+the check runs.
 
 ## External Clearing
 

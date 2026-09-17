@@ -127,4 +127,26 @@ class LedgerConcurrencyAndInvariantTest extends AbstractIntegrationTest {
 
         assertThat(ledger.balance(acct)).isEqualByComparingTo("25.00");
     }
+
+    /**
+     * The zero-sum invariant is enforced by the database, not only by the service.
+     * A deferred constraint trigger rejects, at commit, a transaction whose entries
+     * do not sum to zero, even when inserted by direct SQL that bypasses the service.
+     */
+    @Test
+    void an_unbalanced_transaction_cannot_be_posted_by_direct_sql() {
+        UUID acct = account("unbal");
+        UUID txnId = UUID.randomUUID();
+        jdbc.update("insert into transactions (id, idempotency_key, type, amount, request_hash) "
+                        + "values (?, ?, 'DEPOSIT', 50.00, ?)",
+                txnId, "unbal-" + txnId, "x".repeat(64));
+
+        // A single entry leaves the transaction summing to 50, not zero, so the
+        // deferred constraint trigger rejects it at commit.
+        assertThatThrownBy(() ->
+                jdbc.update("insert into ledger_entries (id, transaction_id, account_id, amount) "
+                                + "values (?, ?, ?, 50.00)",
+                        UUID.randomUUID(), txnId, acct))
+                .isInstanceOf(DataAccessException.class);
+    }
 }

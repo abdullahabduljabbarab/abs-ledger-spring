@@ -66,7 +66,10 @@ source of truth for the constraints the service depends on.
 ## ADR-009: Constraints in the database, not only in Java
 
 Positive amounts (`CHECK`), a single-use idempotency key (`UNIQUE`), entries that
-reference a real transaction and account (`FOREIGN KEY`), and immutable entries
-(trigger) are all declared in the migration. The Java `@Transactional` logic then
-enforces what PostgreSQL already refuses, so a bad write is rejected even if the
-application logic were wrong.
+reference a real transaction and account (`FOREIGN KEY`), balanced transactions (a
+deferred constraint trigger that rejects a non-zero-sum transaction at commit), and
+immutable entries (trigger) are all declared in the migration. The zero-sum rule is
+a cross-row invariant, so it needs the deferred trigger rather than a plain
+constraint; a foreign key alone proves referential integrity, not balancing. The
+Java `@Transactional` logic then enforces what PostgreSQL already refuses, so a bad
+write is rejected even if the application logic were wrong.

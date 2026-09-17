@@ -41,7 +41,7 @@ Each invariant is enforced by the database, not only by Java:
 | Invariant | In the service | In PostgreSQL (Flyway migration) |
 |-----------|----------------|----------------------------------|
 | Positive amounts | Bean Validation on the request | `CHECK (amount > 0)` |
-| Balanced transaction | Paired entries, summed and asserted before commit | entries reference a real transaction and account via `FOREIGN KEY` |
+| Balanced transaction | Paired entries, summed and asserted before commit | a deferred constraint trigger rejects a transaction whose entries do not sum to zero at commit; `FOREIGN KEY`s tie each entry to a real transaction and account |
 | Idempotency | Look up the key, compare the request hash | `UNIQUE` on `idempotency_key`, caught as a race and replayed |
 | Immutable entries | No setters, no update endpoint | trigger rejecting any `UPDATE`/`DELETE` on `ledger_entries` |
 | Derived balance | `SUM` query, coalesced to zero | balance is never stored |
@@ -163,6 +163,7 @@ test maps to an invariant:
 | `transfer_with_insufficient_funds_is_rejected` | an underfunded transfer is `422` |
 | `concurrent_transfers_keep_the_books_balanced` | 100 parallel transfers, books still balance |
 | `every_transaction_balances_to_zero` | no transaction has a non-zero entry sum |
+| `an_unbalanced_transaction_cannot_be_posted_by_direct_sql` | the database rejects a non-zero-sum transaction |
 | `posted_entries_cannot_be_updated_or_deleted` | the database refuses to mutate history |
 
 ## Documentation

@@ -30,7 +30,7 @@ authorization, network-level DDoS, TLS termination, and cloud infrastructure.
 |--------|------------|------|
 | Direct modification or deletion of a posted entry | Append-only trigger raises on any UPDATE or DELETE of `ledger_entries`; no setter and no mutating endpoint exist | `posted_entries_cannot_be_updated_or_deleted` |
 | An entry pointing at no real transaction or account | FOREIGN KEY constraints on `ledger_entries` | enforced by schema |
-| A non-positive or unbalanced posting | `CHECK (amount > 0)` and the service asserting entries sum to zero before commit | `every_transaction_balances_to_zero`, `negative_amount_is_rejected_by_validation` |
+| A non-positive or unbalanced posting | `CHECK (amount > 0)`; a deferred constraint trigger rejects a transaction whose entries do not sum to zero at commit, independently of the service | `every_transaction_balances_to_zero`, `an_unbalanced_transaction_cannot_be_posted_by_direct_sql`, `negative_amount_is_rejected_by_validation` |
 | SQL injection through request fields | Spring Data JPA parameterised queries; inputs bound as typed `UUID` and `BigDecimal`, so injection strings fail to parse before reaching SQL | type-safe binding |
 
 ### R: Repudiation

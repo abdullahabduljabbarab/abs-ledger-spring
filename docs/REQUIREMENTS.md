@@ -26,7 +26,7 @@
 | REQ-NF-003 | Database credentials shall come from environment variables, never from source control. |
 | REQ-NF-004 | The CI pipeline shall compile the service and run the full automated test suite on every push. |
 | REQ-NF-005 | After every committed transaction, the sum of all ledger entries across the system shall equal zero. |
-| REQ-NF-006 | Every committed transaction shall have ledger entries whose sum equals zero. |
+| REQ-NF-006 | Every committed transaction shall have ledger entries whose sum equals zero, enforced by a deferred database constraint as well as the service. |
 | REQ-NF-007 | Tests shall run against real PostgreSQL (Testcontainers); local development shall use PostgreSQL via Docker Compose. |
 | REQ-NF-008 | Schema changes shall be managed through versioned Flyway migrations, with Hibernate validating the mapping against them. |
 | REQ-NF-009 | Positive amounts, single-use idempotency keys and referential integrity shall be enforced by database constraints, not only by application code. |
