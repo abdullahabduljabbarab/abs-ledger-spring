@@ -1,5 +1,7 @@
 # abs-ledger-spring
 
+![CI](https://github.com/abdullahabduljabbarab/abs-ledger-spring/actions/workflows/ci.yml/badge.svg)
+
 A deliberately small double-entry ledger, built on Java 21 and Spring Boot. It
 holds accounts, posts transactions as balanced pairs of entries, and derives
 every balance from those entries. The point is not size, it is correctness: the
@@ -113,9 +115,27 @@ test maps to an invariant:
 | `transfer_moves_money_and_conserves_the_pair` | a transfer conserves the two accounts |
 | `duplicate_idempotency_key_replays_with_200_and_applies_once` | idempotent replay, applied once |
 | `same_key_different_parameters_is_a_conflict` | key reuse with different params is `409` |
+| `duplicate_account_name_is_conflict` | a reused account name is `409` |
+| `self_transfer_is_rejected` | a transfer to the same account is `422` |
+| `transfer_with_insufficient_funds_is_rejected` | an underfunded transfer is `422` |
 | `concurrent_transfers_keep_the_books_balanced` | 100 parallel transfers, books still balance |
 | `every_transaction_balances_to_zero` | no transaction has a non-zero entry sum |
 | `posted_entries_cannot_be_updated_or_deleted` | the database refuses to mutate history |
+
+## Documentation
+
+| Document | What it covers |
+|----------|----------------|
+| [docs/DESIGN.md](docs/DESIGN.md) | Architecture, data model, lifecycle, concurrency |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Architecture decision records |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Functional and non-functional requirements |
+| [docs/VV_PLAN.md](docs/VV_PLAN.md) | Requirement-to-test mapping |
+| [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md) | STRIDE analysis and gaps |
+| [docs/SECURITY.md](docs/SECURITY.md) | Security boundaries and limitations |
+| [docs/SLO.md](docs/SLO.md) | Objectives and how they are verified |
+| [docs/MVP.md](docs/MVP.md) | Scope, in and out |
+| [docs/ENGINEERING_REPORT.md](docs/ENGINEERING_REPORT.md) | Narrative engineering write-up |
+| [docs/PRODUCTION_LOG.md](docs/PRODUCTION_LOG.md) | Build log |
 
 ## Stack
 
