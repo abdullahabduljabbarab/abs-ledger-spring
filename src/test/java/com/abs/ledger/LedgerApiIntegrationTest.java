@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,18 +40,19 @@ class LedgerApiIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isCreated());
     }
 
-    private String balance(UUID account) throws Exception {
+    private BigDecimal balance(UUID account) throws Exception {
         String body = mvc.perform(get("/accounts/" + account + "/balance"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        return json.readTree(body).get("balance").asText();
+        // Compare money by value, not string: JSON round-trips 100.00 as 100.0.
+        return new BigDecimal(json.readTree(body).get("balance").asText());
     }
 
     @Test
     void deposit_credits_the_account() throws Exception {
         UUID account = createAccount("acct-" + UUID.randomUUID());
         deposit(account, "100.00", UUID.randomUUID().toString());
-        assertThat(balance(account)).isEqualTo("100.00");
+        assertThat(balance(account)).isEqualByComparingTo(new BigDecimal("100.00"));
     }
 
     @Test
@@ -63,7 +65,7 @@ class LedgerApiIntegrationTest extends AbstractIntegrationTest {
                         .content("{\"idempotency_key\":\"" + UUID.randomUUID() + "\",\"type\":\"withdrawal\","
                                 + "\"amount\":30.00,\"account_id\":\"" + account + "\"}"))
                 .andExpect(status().isCreated());
-        assertThat(balance(account)).isEqualTo("70.00");
+        assertThat(balance(account)).isEqualByComparingTo(new BigDecimal("70.00"));
 
         // 80 > 70 remaining, so this must be refused and the balance unchanged.
         mvc.perform(post("/transactions")
@@ -71,7 +73,7 @@ class LedgerApiIntegrationTest extends AbstractIntegrationTest {
                         .content("{\"idempotency_key\":\"" + UUID.randomUUID() + "\",\"type\":\"withdrawal\","
                                 + "\"amount\":80.00,\"account_id\":\"" + account + "\"}"))
                 .andExpect(status().isUnprocessableEntity());
-        assertThat(balance(account)).isEqualTo("70.00");
+        assertThat(balance(account)).isEqualByComparingTo(new BigDecimal("70.00"));
     }
 
     @Test
@@ -87,8 +89,8 @@ class LedgerApiIntegrationTest extends AbstractIntegrationTest {
                                 + "\"to_account_id\":\"" + to + "\"}"))
                 .andExpect(status().isCreated());
 
-        assertThat(balance(from)).isEqualTo("60.00");
-        assertThat(balance(to)).isEqualTo("40.00");
+        assertThat(balance(from)).isEqualByComparingTo(new BigDecimal("60.00"));
+        assertThat(balance(to)).isEqualByComparingTo(new BigDecimal("40.00"));
     }
 
     @Test
@@ -112,7 +114,7 @@ class LedgerApiIntegrationTest extends AbstractIntegrationTest {
         JsonNode a = json.readTree(first);
         JsonNode b = json.readTree(second);
         assertThat(b.get("id").asText()).isEqualTo(a.get("id").asText());
-        assertThat(balance(account)).isEqualTo("50.00");
+        assertThat(balance(account)).isEqualByComparingTo(new BigDecimal("50.00"));
     }
 
     @Test
