@@ -160,4 +160,40 @@ class LedgerApiIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.closing_balance").value(70.00))
                 .andExpect(jsonPath("$.entries.length()").value(2));
     }
+
+    @Test
+    void duplicate_account_name_is_conflict() throws Exception {
+        String name = "dup-" + UUID.randomUUID();
+        mvc.perform(post("/accounts").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + name + "\"}"))
+                .andExpect(status().isCreated());
+        mvc.perform(post("/accounts").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + name + "\"}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void self_transfer_is_rejected() throws Exception {
+        UUID account = createAccount("self-" + UUID.randomUUID());
+        deposit(account, "100.00", UUID.randomUUID().toString());
+        mvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"idempotency_key\":\"" + UUID.randomUUID() + "\",\"type\":\"transfer\","
+                                + "\"amount\":10.00,\"from_account_id\":\"" + account + "\","
+                                + "\"to_account_id\":\"" + account + "\"}"))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void transfer_with_insufficient_funds_is_rejected() throws Exception {
+        UUID from = createAccount("tf-from-" + UUID.randomUUID());
+        UUID to = createAccount("tf-to-" + UUID.randomUUID());
+        deposit(from, "10.00", UUID.randomUUID().toString());
+        mvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"idempotency_key\":\"" + UUID.randomUUID() + "\",\"type\":\"transfer\","
+                                + "\"amount\":50.00,\"from_account_id\":\"" + from + "\","
+                                + "\"to_account_id\":\"" + to + "\"}"))
+                .andExpect(status().isUnprocessableEntity());
+    }
 }
